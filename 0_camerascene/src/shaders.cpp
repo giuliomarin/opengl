@@ -1,8 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#include <OpenGL/glext.h>
+#else
 #include <GL/glut.h>
 #include <GL/glext.h>
+#endif
+#include "shaders.h"
 
 using namespace std ; 
 

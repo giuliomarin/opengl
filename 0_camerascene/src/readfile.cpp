@@ -23,7 +23,11 @@
 #include <sstream>
 #include <deque>
 #include <stack>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
+#endif
 #include "Transform.h"
 
 using namespace std;
