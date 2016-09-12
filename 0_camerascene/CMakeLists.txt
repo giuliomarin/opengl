@@ -6,8 +6,8 @@ set(proj_path .)
 include_directories(${proj_path}/include)
 
 # Add sources to compile exe
-file(GLOB_RECURSE project_src_files ${proj_path}/src/*)
-file(GLOB_RECURSE project_hpp_files ${proj_path}/include/*)
+file(GLOB_RECURSE project_src_files ${proj_path}/src/*.cpp)
+file(GLOB_RECURSE project_hpp_files ${proj_path}/include/*.hpp)
 add_executable(${project_name} ${project_src_files} ${project_hpp_files})
 
 # Post build

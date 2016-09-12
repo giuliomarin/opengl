@@ -17,7 +17,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 # Apps
 # ----------------
 
-set(APPS 0_camerascene)
+set(APPS 0_camerascene 1_camerasimulator)
 
 FOREACH(app ${APPS})
     add_subdirectory(${app})
