@@ -30,3 +30,6 @@
 
 # MacOS
 .DS_Store
+
+# deps
+deps
