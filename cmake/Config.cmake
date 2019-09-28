@@ -22,23 +22,23 @@ if(MSVC)
     endif()
 elseif(ANDROID)
     # Android log library
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -llog -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -llog -fPIC")
     if (${TARGET_ARCH} STREQUAL "x86" OR ${TARGET_ARCH} STREQUAL "x86_64")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4 -mfpmath=sse")
     endif()
 elseif(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -fexceptions -frtti -msse4 -mfpmath=sse -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -pthread -fexceptions -frtti -msse4 -mfpmath=sse -fPIC")
     # Disable @rpath in the install name
     set(CMAKE_MACOSX_RPATH 1)
 elseif(LINUX)
     # Linux armhf
     if (${TARGET_ARCH} STREQUAL armhf)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -fexceptions -frtti -mfpu=neon -fPIC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -pthread -fexceptions -frtti -mfpu=neon -fPIC")
     # Linux aarch64
     elseif (${TARGET_ARCH} STREQUAL aarch64)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -fexceptions -frtti -fPIC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -pthread -fexceptions -frtti -fPIC")
     # Linux x86_64
     elseif(${TARGET_ARCH} STREQUAL x86_64)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -std=c++11 -pthread -fexceptions -frtti -msse4 -mfpmath=sse -fPIC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -std=c++17 -pthread -fexceptions -frtti -msse4 -mfpmath=sse -fPIC")
     endif()
 endif()

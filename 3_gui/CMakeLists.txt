@@ -1,4 +1,4 @@
-set(project_name 0_test)
+set(project_name 3_gui)
 project(${project_name})
 
 # Inclusion folders
@@ -10,8 +10,7 @@ include_directories(${proj_path}/include ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp-l
 # Add sources to compile exe
 file(GLOB_RECURSE project_src_files ${proj_path}/src/*.cpp)
 file(GLOB_RECURSE project_hpp_files ${proj_path}/include/*.hpp)
-set(glad_src ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp-lib/glad/glad_gl.c ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp-lib/glad/glad_vulkan.c)
-add_executable(${project_name} ${project_src_files} ${project_hpp_files} ${glad_src})
+add_executable(${project_name} ${project_src_files} ${project_hpp_files})
 
 # -------------------
 # Libraries
