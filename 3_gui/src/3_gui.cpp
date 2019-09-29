@@ -19,7 +19,7 @@ public:
 								 "in vec3 color;\n"
 								 "out vec4 frag_color;\n"
 								 "void main() {\n"
-								 "    frag_color = 3.0 * modelViewProj * vec4(color, 1.0);\n"
+								 "    frag_color = vec4(color, 1.0);\n"
 								 "    gl_Position = modelViewProj * vec4(position, 1.0);\n"
 								 "}",
 
@@ -112,12 +112,12 @@ private:
 
 class ExampleApplication : public nanogui::Screen {
 public:
-	ExampleApplication() : nanogui::Screen(Eigen::Vector2i(800, 600), "NanoGUI Test", false) {
+	ExampleApplication() : nanogui::Screen(Eigen::Vector2i(800, 600), "NanoGUI Test") {
 		using namespace nanogui;
 
 		Window *window = new Window(this, "GLCanvas Demo");
 		window->setPosition(Vector2i(15, 15));
-		window->setLayout(new GroupLayout());
+		window->setLayout(new GroupLayout(0, 0, 0, 0));
 
 		mCanvas = new MyGLCanvas(window);
 		mCanvas->setBackgroundColor({100, 100, 100, 255});
