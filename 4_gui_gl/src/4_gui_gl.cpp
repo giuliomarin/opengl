@@ -2,25 +2,34 @@
 #include <nanogui/nanogui.h>
 #include "linmath.h"
 #include <iostream>
+#include <opencv2/imgcodecs.hpp>
 
 using namespace std;
 using namespace Eigen;
+using namespace cv;
+
+struct MyPoint
+{
+		float x, y, z;
+		float r, g, b;
+	void print()
+	{
+		cout << x << " " << y << " " << z << "       " << r << " " << g << " " << b << endl;
+	}
+};
 
 class MyGLCanvas : public nanogui::GLCanvas {
 public:
 	MyGLCanvas(Widget *parent) : nanogui::GLCanvas(parent), mRotation(nanogui::Vector3f(0.f, 0.f, 0.f)) {
 		using namespace nanogui;
 
-		static const struct
-		{
-				float x, y, z;
-				float r, g, b;
-		} vertices[] =
-		{
-				{ -60.f, -40.f, 0.f, 1.f, 0.f, 0.f },
-				{  60.f, -40.f, 0.f, 0.f, 1.f, 0.f },
-				{   0.f,  60.f, 0.f, 0.f, 0.f, 1.f }
-		};
+		readImg("/Users/giulio/git/sampledata/3dmodels/cube.jpg");
+
+//		{
+//				{ -60.f, -40.f, 0.f, 1.f, 0.f, 0.f },
+//				{  60.f, -40.f, 0.f, 0.f, 1.f, 0.f },
+//				{   0.f,  60.f, 0.f, 0.f, 0.f, 1.f }
+//		};
 
 		static const char* vertex_shader_text =
 		"#version 330\n"
@@ -63,7 +72,7 @@ public:
 
 		glGenBuffers(1, &vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(MyPoint) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
     mvp_location = glGetUniformLocation(program, "MVP");
     vpos_location = glGetAttribLocation(program, "position");
@@ -142,8 +151,26 @@ public:
     glBindVertexArray(vao);
 
 		glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
-		glDrawArrays(GL_POINTS, 0, 3);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_POINTS, 0, vertices.size());
+//		glDrawArrays(GL_TRIANGLES, 0, 3);
+	}
+
+	void readImg(const string &path)
+	{
+		cout << "reading " << path << endl;
+		vertices.clear();
+		Mat img = imread(path);
+	for (int r = 0; r < img.rows; r++)
+			{
+				Vec3b *imgPtr = img.ptr<Vec3b>(r);
+				for (int c = 0; c < img.cols; c++)
+				{
+					vertices.push_back({(float)(c - img.cols / 2) * 1.f, (float)(r - img.rows / 2) * 1.f, 0.f, (float)(imgPtr[c][2]) / 255.f, (float)(imgPtr[c][1]) / 255.f, (float)(imgPtr[c][0]) / 255.f});
+	//				vertices[vertices.size() - 1].print();
+				}
+			}
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(MyPoint) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 	}
 
 private:
@@ -153,6 +180,7 @@ private:
 	float angle = 0.f;
 	float scale = 500.f;
 	Vector2f tran = {0.f, 0.f};
+	vector<MyPoint> vertices;
 };
 
 
@@ -161,23 +189,29 @@ public:
 	ExampleApplication() : nanogui::Screen(Eigen::Vector2i(800, 600), "NanoGUI Test") {
 		using namespace nanogui;
 
-		Window *window = new Window(this, "GLCanvas Demo");
-		window->setPosition(Vector2i(15, 15));
+		Window *window = new Window(this, "");
 		window->setLayout(new GroupLayout(0, 0, 0, 0));
 
 		mCanvas = new MyGLCanvas(window);
 		mCanvas->setBackgroundColor({100, 100, 100, 255});
-		mCanvas->setSize({400, 400});
+		mCanvas->setSize({600, 600});
 
-		Widget *tools = new Widget(window);
-		tools->setLayout(new BoxLayout(Orientation::Horizontal,
-																	 Alignment::Middle, 0, 5));
+		Window *windowOption = new Window(this, "Option");
+		windowOption->setLayout(new GroupLayout(0, 0, 0, 0));
+		windowOption->setPosition(Vector2i(600, 0));
+		Widget *tools = new Widget(windowOption);
+		windowOption->setFixedWidth(200);
+		tools->setLayout(new BoxLayout(Orientation::Vertical,
+																	 Alignment::Fill, 0, 5));
 
 		Button *b0 = new Button(tools, "Random Color");
 		b0->setCallback([this]() { mCanvas->setBackgroundColor(Vector4i(rand() % 256, rand() % 256, rand() % 256, 255)); });
 
 		Button *b1 = new Button(tools, "Random Rotation");
 		b1->setCallback([this]() { mCanvas->setRotation(nanogui::Vector3f((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f)); });
+
+		Slider *slider = new Slider(tools);
+		slider->setValue(0.5f);
 
 		performLayout();
 	}
@@ -198,6 +232,12 @@ public:
 	}
 private:
 	MyGLCanvas *mCanvas;
+
+	virtual bool dropEvent(const std::vector<std::string> &filenames) override
+	{
+		mCanvas->readImg(filenames[0]);
+		return true; /* To be overridden */
+	}
 };
 
 int main(int argc, char **argv) {
