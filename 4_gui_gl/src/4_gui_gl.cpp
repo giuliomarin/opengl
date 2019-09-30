@@ -4,21 +4,22 @@
 #include <iostream>
 
 using namespace std;
+using namespace Eigen;
 
 class MyGLCanvas : public nanogui::GLCanvas {
 public:
-	MyGLCanvas(Widget *parent) : nanogui::GLCanvas(parent), mRotation(nanogui::Vector3f(0.25f, 0.5f, 0.33f)) {
+	MyGLCanvas(Widget *parent) : nanogui::GLCanvas(parent), mRotation(nanogui::Vector3f(0.f, 0.f, 0.f)) {
 		using namespace nanogui;
 
 		static const struct
 		{
-				float x, y;
+				float x, y, z;
 				float r, g, b;
-		} vertices[3] =
+		} vertices[] =
 		{
-				{ -0.6f, -0.4f, 1.f, 0.f, 0.f },
-				{  0.6f, -0.4f, 0.f, 1.f, 0.f },
-				{   0.f,  0.6f, 0.f, 0.f, 1.f }
+				{ -60.f, -40.f, 0.f, 1.f, 0.f, 0.f },
+				{  60.f, -40.f, 0.f, 0.f, 1.f, 0.f },
+				{   0.f,  60.f, 0.f, 0.f, 0.f, 1.f }
 		};
 
 		static const char* vertex_shader_text =
@@ -64,37 +65,84 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-
     mvp_location = glGetUniformLocation(program, "MVP");
     vpos_location = glGetAttribLocation(program, "position");
     vcol_location = glGetAttribLocation(program, "color");
 
     glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);
+    glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*) 0);
     glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 2));
+    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*) (sizeof(float) * 3));
+
+		glPointSize(10);
 	}
 
 	void setRotation(nanogui::Vector3f vRotation) {
 		mRotation = vRotation;
 	}
 
+	virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override
+	{
+//		cout << button << "  " << down << endl;
+//		if (button == GLFW_MOUSE_BUTTON_2 && !down)
+//		{
+//			angle = 0.f;
+//			tran = {0, 0};
+//			scale = 500.f;
+//		}
+		return true;
+	}
+
+	/// Handle a mouse drag event (default implementation: do nothing)
+	virtual bool mouseDragEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override
+	{
+		if (button == GLFW_MOUSE_BUTTON_2)
+		{
+			auto vec = p - size() / 2;
+			angle = -atan2(vec[1], vec[0]);
+		}
+		else if (button == GLFW_MOUSE_BUTTON_3)
+		{
+			tran += Vector2f((float)rel[0], -(float)rel[1]);
+		}
+		return true;
+	}
+
+	virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel) override
+	{
+		scale = max(0.f, scale + rel[1]);
+		cout << "scale: " << scale << endl;
+		return true;
+	}
+
 	virtual void drawGL() override {
-		using namespace nanogui;
 
 		float ratio = 1.f; // todo: get this somewhow
-		mat4x4 m, p, mvp;
+		mat4x4 m, v, p, mvp;
 
 		mat4x4_identity(m);
+//		mat4x4_scale_aniso(m, m, scale, scale, 1.f);
+		mat4x4_translate_in_place(m, tran[0], tran[1], 0.f);
 		mat4x4_rotate_X(m, m, mRotation[0]);
-		mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-		mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-		mat4x4_mul(mvp, p, m);
+		mat4x4_rotate_Z(m, m, angle);
+
+		mat4x4_identity(v);
+		vec3 eye = {0, 0, scale};
+		vec3 center = {0, 0, 0};
+		vec3 up = {0, 1, 0};
+		mat4x4_look_at(v, eye, center, up);
+
+//		mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+		mat4x4_perspective(p, 60.f/180.f*3.14159, ratio, 10.f, 1000.f);
+
+		mat4x4_mul(mvp, v, m);
+		mat4x4_mul(mvp, p, mvp);
 
 		glUseProgram(program);
     glBindVertexArray(vao);
 
 		glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
+		glDrawArrays(GL_POINTS, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 
@@ -102,6 +150,9 @@ private:
 	GLuint vertex_buffer, vertex_shader, fragment_shader, program, vao;
 	GLint mvp_location, vpos_location, vcol_location;
 	Eigen::Vector3f mRotation;
+	float angle = 0.f;
+	float scale = 500.f;
+	Vector2f tran = {0.f, 0.f};
 };
 
 
