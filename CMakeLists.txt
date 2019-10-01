@@ -16,6 +16,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 
 # Setup
 function(find_opencv)
+  set(OpenCV_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../cpp-lib/opencv/darwin/lib64/lib/cmake/opencv4)
 	find_package(OpenCV ${OPENCV_VERSION} REQUIRED)
   set (OpenCV_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS} PARENT_SCOPE)
   set (OpenCV_LIBS ${OpenCV_LIBS} PARENT_SCOPE)
