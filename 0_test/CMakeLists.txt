@@ -4,7 +4,6 @@ project(${project_name})
 # Inclusion folders
 set(proj_path "${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories(${proj_path}/include)
-include_linmath()
 
 # Add sources to compile exe
 file(GLOB_RECURSE src_files ${proj_path}/src/*.cpp)
@@ -14,6 +13,7 @@ add_executable(${project_name} ${src_files} ${hpp_files})
 # Libraries
 # -------------------
 
+include_linmath()
 link_glfw(${project_name})
 
 # Log message
